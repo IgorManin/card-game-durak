@@ -1,5 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { findLowestTrumpCard, shuffleDeck } from '../utils/utils';
+import {
+  findLowestTrumpCard,
+  moveCards,
+  shuffleDeck,
+  takeCards,
+  takeCardsFromDeck,
+} from '../utils/utils';
 import { deckCard } from '../constants/deck';
 
 export interface Card {
@@ -44,12 +50,64 @@ const cardsSlice = createSlice({
         isAttack: true,
       };
     },
+
+    moveCardOnTheTable: (
+      state,
+      action: PayloadAction<{
+        cards: Card[];
+        playerType: 'player' | 'computer';
+      } | null>,
+    ) => {
+      const cards = state.cardsOnTheTable ?? [];
+      const payload = action.payload;
+
+      if (payload) {
+        state.cardsOnTheTable = [...cards, ...payload.cards] as Card[];
+        moveCards(state, payload.cards, payload.playerType);
+      }
+    },
+
+    takeCardsFromTheTable: (
+      state,
+      action: PayloadAction<{
+        playerType: 'player' | 'computer';
+      }>,
+    ) => {
+      const payload = action.payload;
+      if (payload) {
+        takeCards(state, payload.playerType);
+      }
+    },
+
+    takeCardsFromTheDeck: (
+      state,
+      action: PayloadAction<{
+        playerType: 'player' | 'computer';
+        numberOfCards: number;
+      }>,
+    ) => {
+      const payload = action.payload;
+      if (payload) {
+        takeCardsFromDeck(state, payload.playerType, payload.numberOfCards);
+      }
+    },
+    removeCardsFomTable: (state) => {
+      state.cardsOnTheTable = null;
+    },
+
     updateWhoMoves: (state, action: PayloadAction<Partial<WhoMoves>>) => {
       state.whoMoves = { ...state.whoMoves, ...action.payload };
     },
   },
 });
 
-export const { initGame, updateWhoMoves } = cardsSlice.actions;
+export const {
+  initGame,
+  updateWhoMoves,
+  moveCardOnTheTable,
+  takeCardsFromTheTable,
+  removeCardsFomTable,
+  takeCardsFromTheDeck,
+} = cardsSlice.actions;
 
 export default cardsSlice.reducer;
